@@ -1,14 +1,17 @@
 using Asp.Versioning;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using SibersProjectManager.Data;
 using SibersProjectManager.Interfaces;
 using SibersProjectManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+LoggerConfiguration();
 ApiVersioningSetup(builder.Services);
 ServiceRegistration(builder.Services);
+
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
@@ -68,4 +71,14 @@ void ServiceRegistration(IServiceCollection services)
     services.AddScoped<IEmployeeService, EmployeeService>();
     services.AddScoped<IProjectService, ProjectService>();
     services.AddScoped<ITaskService, TaskService>();
+}
+
+void LoggerConfiguration()
+{
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .Build())
+        .Enrich.FromLogContext()
+        .CreateLogger();
 }

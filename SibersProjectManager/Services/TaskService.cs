@@ -155,7 +155,7 @@ namespace SibersProjectManager.Services
             }
         }
 
-        public async Task<Result<bool>> ChangeStatusAsync(int taskId, Models.Enums.TaskStatus newStatus)
+        public async Task<Result<bool>> ChangeStatusAsync(int taskId, TaskStatus newStatus)
         {
             var task = await _context.ProjectTasks.FindAsync(taskId);
             if (task is null)
@@ -178,7 +178,7 @@ namespace SibersProjectManager.Services
         }
 
         public async Task<Result<IReadOnlyCollection<ProjectTask>>> GetFilteredAsync(
-            int page, Models.Enums.TaskStatus? status = null, int? projectId = null,
+            int page, TaskStatus? status = null, int? projectId = null,
             Priority? priority = Priority.Low, SortBy? sortBy = SortBy.Id, bool descending = false)
         {
             var query = _context.ProjectTasks
