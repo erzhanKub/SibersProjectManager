@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SibersProjectManager.Models.Enums;
 
 namespace SibersProjectManager.Models
 {
@@ -17,7 +18,7 @@ namespace SibersProjectManager.Models
         [Required, MaxLength(200)]
         public string ContractorCompany { get; init; } = string.Empty;
 
-        public int Priority { get; set; }
+        public Priority Priority { get; set; }
 
         public int? ProjectManagerId { get; init; }
         public Employee ProjectManager { get; init; } = new();

@@ -23,7 +23,7 @@ namespace SibersProjectManager.Controllers
         [HttpGet]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(IReadOnlyCollection<Employee>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll([FromQuery] int page = 1)
+        public async Task<IActionResult> GetAsync([FromQuery] int page = 1)
         {
             var result = await _employeeService.GetAsync(page);
             if (result.IsSuccess)
@@ -35,7 +35,7 @@ namespace SibersProjectManager.Controllers
         [HttpGet("{id:int}")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(Employee), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
             var result = await _employeeService.GetByIdAsync(id);
             if (result.IsSuccess)
@@ -47,7 +47,7 @@ namespace SibersProjectManager.Controllers
         [HttpPost("create")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] Employee employee)
+        public async Task<IActionResult> CreateAsync([FromBody] Employee employee)
         {
             if (!ModelState.IsValid)
             {
@@ -57,7 +57,7 @@ namespace SibersProjectManager.Controllers
 
             var result = await _employeeService.CreateAsync(employee);
             if (result.IsSuccess)
-                return CreatedAtAction(nameof(GetById), new { id = result.Value }, result.Value);
+                return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Value }, result.Value);
 
             return BadRequest(result.ErrorMessage);
         }
@@ -65,7 +65,7 @@ namespace SibersProjectManager.Controllers
         [HttpPut("update")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Update([FromBody] Employee employee)
+        public async Task<IActionResult> UpdateAsync([FromBody] Employee employee)
         {
             if (!ModelState.IsValid)
             {
@@ -80,10 +80,10 @@ namespace SibersProjectManager.Controllers
             return BadRequest(result.ErrorMessage);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             var result = await _employeeService.DeleteAsync(id);
             if (result.IsSuccess)

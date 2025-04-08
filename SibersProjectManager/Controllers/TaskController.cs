@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SibersProjectManager.Interfaces;
 using SibersProjectManager.Models;
 using SibersProjectManager.Models.Enums;
-using TaskStatus = SibersProjectManager.Models.Enums.TaskStatus;
 
 namespace SibersProjectManager.Controllers
 {
@@ -25,7 +24,7 @@ namespace SibersProjectManager.Controllers
         [HttpGet]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(IReadOnlyCollection<ProjectTask>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll(
+        public async Task<IActionResult> GetAsync(
             [FromQuery] int projectId,
             [FromQuery] int page = 1,
             [FromQuery] TaskStatus? status = null)
@@ -40,7 +39,7 @@ namespace SibersProjectManager.Controllers
         [HttpGet("{id:int}")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(ProjectTask), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetById([FromRoute] int id)
+        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
         {
             var result = await _taskService.GetByIdAsync(id);
             if (result.IsSuccess)
@@ -52,7 +51,7 @@ namespace SibersProjectManager.Controllers
         [HttpPost("create")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
-        public async Task<IActionResult> Create([FromBody] ProjectTask task)
+        public async Task<IActionResult> CreateAsync([FromBody] ProjectTask task)
         {
             if (!ModelState.IsValid)
             {
@@ -62,7 +61,7 @@ namespace SibersProjectManager.Controllers
 
             var result = await _taskService.CreateAsync(task);
             if (result.IsSuccess)
-                return CreatedAtAction(nameof(GetById), new { id = result.Value }, result.Value);
+                return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Value }, result.Value);
 
             return BadRequest(result.ErrorMessage);
         }
@@ -70,7 +69,7 @@ namespace SibersProjectManager.Controllers
         [HttpPut("update")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Update([FromBody] ProjectTask task)
+        public async Task<IActionResult> UpdateAsync([FromBody] ProjectTask task)
         {
             if (!ModelState.IsValid)
             {
@@ -88,7 +87,7 @@ namespace SibersProjectManager.Controllers
         [HttpDelete("{id:int}")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             var result = await _taskService.DeleteAsync(id);
             if (result.IsSuccess)
@@ -97,10 +96,10 @@ namespace SibersProjectManager.Controllers
             return NotFound(result.ErrorMessage);
         }
 
-        [HttpPost("{id}/assign-executor")]
+        [HttpPost("{id:int}/assign-executor")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        public async Task<IActionResult> AssignExecutor([FromRoute] int id, [FromQuery] int executorId)
+        public async Task<IActionResult> AssignExecutorAsync([FromRoute] int id, [FromQuery] int executorId)
         {
             var result = await _taskService.AssignExecutorAsync(id, executorId);
             if (result.IsSuccess)
@@ -109,10 +108,10 @@ namespace SibersProjectManager.Controllers
             return BadRequest(result.ErrorMessage);
         }
 
-        [HttpPut("{id}/change-status")]
+        [HttpPut("{id:int}/change-status")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromQuery] TaskStatus newStatus)
+        public async Task<IActionResult> ChangeStatusAsync([FromRoute] int id, [FromQuery] TaskStatus newStatus)
         {
             var result = await _taskService.ChangeStatusAsync(id, newStatus);
             if (result.IsSuccess)
@@ -124,7 +123,7 @@ namespace SibersProjectManager.Controllers
         [HttpGet("filter")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(IReadOnlyCollection<ProjectTask>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFiltered(
+        public async Task<IActionResult> GetFilteredAsync(
             [FromQuery] int page = 1,
             [FromQuery] TaskStatus? status = null,
             [FromQuery] int? projectId = null,

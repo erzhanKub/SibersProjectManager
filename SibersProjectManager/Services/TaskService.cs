@@ -15,7 +15,7 @@ namespace SibersProjectManager.Services
         private const int _pageSize = 10;
 
         public async Task<Result<IReadOnlyCollection<ProjectTask>>> GetAsync(
-            int projectId, int page, Models.Enums.TaskStatus? status)
+            int projectId, int page, TaskStatus? status)
         {
             if (page < 1)
                 page = 1;

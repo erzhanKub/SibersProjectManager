@@ -12,13 +12,13 @@ namespace SibersProjectManager.Models
 
         [MaxLength(500)]
         public string Comment { get; init; } = string.Empty;
-        public Enums.TaskStatus Status { get; init; }
+        public TaskStatus Status { get; set; }
         public Priority Priority { get; init; } = Priority.Low;
 
         public int AuthorId { get; init; }
         public Employee Author { get; init; } = new();
 
-        public int? AssigneeId { get; init; }
+        public int? AssigneeId { get; set; }
         public Employee Assignee { get; init; } = new();
 
         public int ProjectId { get; init; }

@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SibersProjectManager.Models;
 using SibersProjectManager.Models.Enums;
-using TaskStatus = SibersProjectManager.Models.Enums.TaskStatus;
 
 namespace SibersProjectManager.Data
 {
-    public static class SeedData
+    internal static class SeedData
     {
         public static void Initialize(IServiceProvider serviceProvider)
         {

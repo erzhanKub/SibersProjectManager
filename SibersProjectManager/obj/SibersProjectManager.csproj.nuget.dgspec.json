@@ -1,25 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj": {}
+    "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj": {}
   },
   "projects": {
-    "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj": {
+    "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
+        "projectUniqueName": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
         "projectName": "SibersProjectManager",
-        "projectPath": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
-        "packagesPath": "C:\\Users\\G-COMP\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\obj\\",
+        "projectPath": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
+        "packagesPath": "C:\\Users\\erkubanychbekov\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\G-COMP\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\erkubanychbekov\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

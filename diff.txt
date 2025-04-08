@@ -1,0 +1,475 @@
+diff --git a/SibersProjectManager/Controllers/ProjectsController.cs b/SibersProjectManager/Controllers/ProjectsController.cs
+index f2693a9..08ddda7 100644
+--- a/SibersProjectManager/Controllers/ProjectsController.cs
++++ b/SibersProjectManager/Controllers/ProjectsController.cs
+@@ -24,7 +24,7 @@ namespace SibersProjectManager.Controllers
+         [HttpGet]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(IReadOnlyCollection<Project>), StatusCodes.Status200OK)]
+-        public async Task<IActionResult> GetAll([FromQuery] int page = 1)
++        public async Task<IActionResult> GetAsync([FromQuery] int page = 1)
+         {
+             var result = await _projectService.GetAsync(page);
+             if (result.IsSuccess)
+@@ -48,7 +48,7 @@ namespace SibersProjectManager.Controllers
+         [HttpPost("create")]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
+-        public async Task<ActionResult<Project>> Post(Project project)
++        public async Task<ActionResult<Project>> CreateAsync(Project project)
+         {
+             if (!ModelState.IsValid)
+             {
+@@ -64,7 +64,9 @@ namespace SibersProjectManager.Controllers
+         }
+ 
+         [HttpPost("{id}/assign-employees")]
+-        public async Task<IActionResult> AssignEmployees([FromRoute] int id, IReadOnlyCollection<int> employeeIds)
++        [MapToApiVersion(1)]
++        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
++        public async Task<IActionResult> AssignEmployeesAsync([FromRoute] int id, IReadOnlyCollection<int> employeeIds)
+         {
+             if (employeeIds is null || !employeeIds.Any())
+             {
+diff --git a/SibersProjectManager/Controllers/TaskController.cs b/SibersProjectManager/Controllers/TaskController.cs
+index eb0a471..b1ac343 100644
+--- a/SibersProjectManager/Controllers/TaskController.cs
++++ b/SibersProjectManager/Controllers/TaskController.cs
+@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
+ using SibersProjectManager.Interfaces;
+ using SibersProjectManager.Models;
+ using SibersProjectManager.Models.Enums;
+-using TaskStatus = SibersProjectManager.Models.Enums.TaskStatus;
+ 
+ namespace SibersProjectManager.Controllers
+ {
+@@ -25,7 +24,7 @@ namespace SibersProjectManager.Controllers
+         [HttpGet]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(IReadOnlyCollection<ProjectTask>), StatusCodes.Status200OK)]
+-        public async Task<IActionResult> GetAll(
++        public async Task<IActionResult> GetAsync(
+             [FromQuery] int projectId,
+             [FromQuery] int page = 1,
+             [FromQuery] TaskStatus? status = null)
+@@ -40,7 +39,7 @@ namespace SibersProjectManager.Controllers
+         [HttpGet("{id:int}")]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(ProjectTask), StatusCodes.Status200OK)]
+-        public async Task<IActionResult> GetById([FromRoute] int id)
++        public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
+         {
+             var result = await _taskService.GetByIdAsync(id);
+             if (result.IsSuccess)
+@@ -52,7 +51,7 @@ namespace SibersProjectManager.Controllers
+         [HttpPost("create")]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
+-        public async Task<IActionResult> Create([FromBody] ProjectTask task)
++        public async Task<IActionResult> CreateAsync([FromBody] ProjectTask task)
+         {
+             if (!ModelState.IsValid)
+             {
+@@ -62,7 +61,7 @@ namespace SibersProjectManager.Controllers
+ 
+             var result = await _taskService.CreateAsync(task);
+             if (result.IsSuccess)
+-                return CreatedAtAction(nameof(GetById), new { id = result.Value }, result.Value);
++                return CreatedAtAction(nameof(GetByIdAsync), new { id = result.Value }, result.Value);
+ 
+             return BadRequest(result.ErrorMessage);
+         }
+@@ -70,7 +69,7 @@ namespace SibersProjectManager.Controllers
+         [HttpPut("update")]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+-        public async Task<IActionResult> Update([FromBody] ProjectTask task)
++        public async Task<IActionResult> UpdateAsync([FromBody] ProjectTask task)
+         {
+             if (!ModelState.IsValid)
+             {
+@@ -88,7 +87,7 @@ namespace SibersProjectManager.Controllers
+         [HttpDelete("{id:int}")]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+-        public async Task<IActionResult> Delete([FromRoute] int id)
++        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
+         {
+             var result = await _taskService.DeleteAsync(id);
+             if (result.IsSuccess)
+@@ -97,10 +96,10 @@ namespace SibersProjectManager.Controllers
+             return NotFound(result.ErrorMessage);
+         }
+ 
+-        [HttpPost("{id}/assign-executor")]
++        [HttpPost("{id:int}/assign-executor")]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+-        public async Task<IActionResult> AssignExecutor([FromRoute] int id, [FromQuery] int executorId)
++        public async Task<IActionResult> AssignExecutorAsync([FromRoute] int id, [FromQuery] int executorId)
+         {
+             var result = await _taskService.AssignExecutorAsync(id, executorId);
+             if (result.IsSuccess)
+@@ -109,10 +108,10 @@ namespace SibersProjectManager.Controllers
+             return BadRequest(result.ErrorMessage);
+         }
+ 
+-        [HttpPut("{id}/change-status")]
++        [HttpPut("{id:int}/change-status")]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+-        public async Task<IActionResult> ChangeStatus([FromRoute] int id, [FromQuery] TaskStatus newStatus)
++        public async Task<IActionResult> ChangeStatusAsync([FromRoute] int id, [FromQuery] TaskStatus newStatus)
+         {
+             var result = await _taskService.ChangeStatusAsync(id, newStatus);
+             if (result.IsSuccess)
+@@ -124,7 +123,7 @@ namespace SibersProjectManager.Controllers
+         [HttpGet("filter")]
+         [MapToApiVersion(1)]
+         [ProducesResponseType(typeof(IReadOnlyCollection<ProjectTask>), StatusCodes.Status200OK)]
+-        public async Task<IActionResult> GetFiltered(
++        public async Task<IActionResult> GetFilteredAsync(
+             [FromQuery] int page = 1,
+             [FromQuery] TaskStatus? status = null,
+             [FromQuery] int? projectId = null,
+diff --git a/SibersProjectManager/Models/Enums/Priority.cs b/SibersProjectManager/Models/Enums/Priority.cs
+index e69de29..118b74e 100644
+--- a/SibersProjectManager/Models/Enums/Priority.cs
++++ b/SibersProjectManager/Models/Enums/Priority.cs
+@@ -0,0 +1,9 @@
++namespace SibersProjectManager.Models.Enums
++{
++    internal enum Priority : byte
++    {
++        Low,
++        Medium,
++        High
++    }
++}
+\ No newline at end of file
+diff --git a/SibersProjectManager/Models/Project.cs b/SibersProjectManager/Models/Project.cs
+index 47f1c97..010e710 100644
+--- a/SibersProjectManager/Models/Project.cs
++++ b/SibersProjectManager/Models/Project.cs
+@@ -1,4 +1,5 @@
+ using System.ComponentModel.DataAnnotations;
++using SibersProjectManager.Models.Enums;
+ 
+ namespace SibersProjectManager.Models
+ {
+@@ -17,7 +18,7 @@ namespace SibersProjectManager.Models
+         [Required, MaxLength(200)]
+         public string ContractorCompany { get; init; } = string.Empty;
+ 
+-        public int Priority { get; set; }
++        public Priority Priority { get; set; }
+ 
+         public int? ProjectManagerId { get; init; }
+         public Employee ProjectManager { get; init; } = new();
+diff --git a/SibersProjectManager/Models/ProjectEmployee.cs b/SibersProjectManager/Models/ProjectEmployee.cs
+index e69de29..292f48c 100644
+--- a/SibersProjectManager/Models/ProjectEmployee.cs
++++ b/SibersProjectManager/Models/ProjectEmployee.cs
+@@ -0,0 +1,11 @@
++namespace SibersProjectManager.Models
++{
++    internal sealed record ProjectEmployee
++    {
++        public int EmployeeId { get; init; }
++        public Employee Employee { get; init; } = new();
++
++        public int ProjectId { get; init; }
++        public Project Project { get; init; } = new();
++    }
++}
+\ No newline at end of file
+diff --git a/SibersProjectManager/Models/ProjectTask.cs b/SibersProjectManager/Models/ProjectTask.cs
+index 623899a..4d61dbf 100644
+--- a/SibersProjectManager/Models/ProjectTask.cs
++++ b/SibersProjectManager/Models/ProjectTask.cs
+@@ -12,13 +12,13 @@ namespace SibersProjectManager.Models
+ 
+         [MaxLength(500)]
+         public string Comment { get; init; } = string.Empty;
+-        public Enums.TaskStatus Status { get; init; }
++        public TaskStatus Status { get; set; }
+         public Priority Priority { get; init; } = Priority.Low;
+ 
+         public int AuthorId { get; init; }
+         public Employee Author { get; init; } = new();
+ 
+-        public int? AssigneeId { get; init; }
++        public int? AssigneeId { get; set; }
+         public Employee Assignee { get; init; } = new();
+ 
+         public int ProjectId { get; init; }
+diff --git a/SibersProjectManager/Services/TaskService.cs b/SibersProjectManager/Services/TaskService.cs
+index f25d3a1..4a9a228 100644
+--- a/SibersProjectManager/Services/TaskService.cs
++++ b/SibersProjectManager/Services/TaskService.cs
+@@ -15,7 +15,7 @@ namespace SibersProjectManager.Services
+         private const int _pageSize = 10;
+ 
+         public async Task<Result<IReadOnlyCollection<ProjectTask>>> GetAsync(
+-            int projectId, int page, Models.Enums.TaskStatus? status)
++            int projectId, int page, TaskStatus? status)
+         {
+             if (page < 1)
+                 page = 1;
+diff --git a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.AssemblyInfo.cs b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.AssemblyInfo.cs
+index 1ac1428..fd45226 100644
+--- a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.AssemblyInfo.cs
++++ b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.AssemblyInfo.cs
+@@ -13,7 +13,7 @@ using System.Reflection;
+ [assembly: System.Reflection.AssemblyCompanyAttribute("SibersProjectManager")]
+ [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+ [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
++[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+753a559df00da204820824f27eb481c852a2c8d6")]
+ [assembly: System.Reflection.AssemblyProductAttribute("SibersProjectManager")]
+ [assembly: System.Reflection.AssemblyTitleAttribute("SibersProjectManager")]
+ [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+diff --git a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.AssemblyInfoInputs.cache b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.AssemblyInfoInputs.cache
+index ea3e690..c0c7528 100644
+--- a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.AssemblyInfoInputs.cache
++++ b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.AssemblyInfoInputs.cache
+@@ -1 +1 @@
+-e26e55df17abeac6a039c9fd0027fb41112f52da3bf3eca106030bad886bad23
++4ced77aa973d82d68168017f8893001120d6ee642bc3d8d56c77dc2ef8d35f16
+diff --git a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.GeneratedMSBuildEditorConfig.editorconfig b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.GeneratedMSBuildEditorConfig.editorconfig
+index 01f3138..8eba143 100644
+--- a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.GeneratedMSBuildEditorConfig.editorconfig
++++ b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.GeneratedMSBuildEditorConfig.editorconfig
+@@ -9,41 +9,41 @@ build_property.EnforceExtendedAnalyzerRules =
+ build_property._SupportedPlatformList = Linux,macOS,Windows
+ build_property.RootNamespace = SibersProjectManager
+ build_property.RootNamespace = SibersProjectManager
+-build_property.ProjectDir = C:\Users\G-COMP\Desktop\source\SibersProjectManager\SibersProjectManager\
++build_property.ProjectDir = C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\
+ build_property.EnableComHosting = 
+ build_property.EnableGeneratedComInterfaceComImportInterop = 
+ build_property.RazorLangVersion = 9.0
+ build_property.SupportLocalizedComponentNames = 
+ build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+-build_property.MSBuildProjectDirectory = C:\Users\G-COMP\Desktop\source\SibersProjectManager\SibersProjectManager
++build_property.MSBuildProjectDirectory = C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager
+ build_property._RazorSourceGeneratorDebug = 
+ build_property.EffectiveAnalysisLevelStyle = 9.0
+ build_property.EnableCodeStyleSeverity = 
+ 
+-[C:/Users/G-COMP/Desktop/source/SibersProjectManager/SibersProjectManager/Views/Home/Index.cshtml]
++[C:/Users/erkubanychbekov/source/repos/dev/SibersProjectManager/SibersProjectManager/Views/Home/Index.cshtml]
+ build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
+ build_metadata.AdditionalFiles.CssScope = 
+ 
+-[C:/Users/G-COMP/Desktop/source/SibersProjectManager/SibersProjectManager/Views/Home/Privacy.cshtml]
++[C:/Users/erkubanychbekov/source/repos/dev/SibersProjectManager/SibersProjectManager/Views/Home/Privacy.cshtml]
+ build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+ build_metadata.AdditionalFiles.CssScope = 
+ 
+-[C:/Users/G-COMP/Desktop/source/SibersProjectManager/SibersProjectManager/Views/Shared/Error.cshtml]
++[C:/Users/erkubanychbekov/source/repos/dev/SibersProjectManager/SibersProjectManager/Views/Shared/Error.cshtml]
+ build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+ build_metadata.AdditionalFiles.CssScope = 
+ 
+-[C:/Users/G-COMP/Desktop/source/SibersProjectManager/SibersProjectManager/Views/Shared/_ValidationScriptsPartial.cshtml]
++[C:/Users/erkubanychbekov/source/repos/dev/SibersProjectManager/SibersProjectManager/Views/Shared/_ValidationScriptsPartial.cshtml]
+ build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+ build_metadata.AdditionalFiles.CssScope = 
+ 
+-[C:/Users/G-COMP/Desktop/source/SibersProjectManager/SibersProjectManager/Views/_ViewImports.cshtml]
++[C:/Users/erkubanychbekov/source/repos/dev/SibersProjectManager/SibersProjectManager/Views/_ViewImports.cshtml]
+ build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+ build_metadata.AdditionalFiles.CssScope = 
+ 
+-[C:/Users/G-COMP/Desktop/source/SibersProjectManager/SibersProjectManager/Views/_ViewStart.cshtml]
++[C:/Users/erkubanychbekov/source/repos/dev/SibersProjectManager/SibersProjectManager/Views/_ViewStart.cshtml]
+ build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+ build_metadata.AdditionalFiles.CssScope = 
+ 
+-[C:/Users/G-COMP/Desktop/source/SibersProjectManager/SibersProjectManager/Views/Shared/_Layout.cshtml]
++[C:/Users/erkubanychbekov/source/repos/dev/SibersProjectManager/SibersProjectManager/Views/Shared/_Layout.cshtml]
+ build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+ build_metadata.AdditionalFiles.CssScope = b-8snsv0chdz
+diff --git a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.assets.cache b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.assets.cache
+index a0b5b37..2014936 100644
+Binary files a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.assets.cache and b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.assets.cache differ
+diff --git a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.csproj.AssemblyReference.cache b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.csproj.AssemblyReference.cache
+index b66283a..3e15582 100644
+Binary files a/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.csproj.AssemblyReference.cache and b/SibersProjectManager/obj/Debug/net9.0/SibersProjectManager.csproj.AssemblyReference.cache differ
+diff --git a/SibersProjectManager/obj/SibersProjectManager.csproj.nuget.dgspec.json b/SibersProjectManager/obj/SibersProjectManager.csproj.nuget.dgspec.json
+index aa9914b..d3a93ab 100644
+--- a/SibersProjectManager/obj/SibersProjectManager.csproj.nuget.dgspec.json
++++ b/SibersProjectManager/obj/SibersProjectManager.csproj.nuget.dgspec.json
+@@ -1,25 +1,31 @@
+ {
+   "format": 1,
+   "restore": {
+-    "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj": {}
++    "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj": {}
+   },
+   "projects": {
+-    "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj": {
++    "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj": {
+       "version": "1.0.0",
+       "restore": {
+-        "projectUniqueName": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
++        "projectUniqueName": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
+         "projectName": "SibersProjectManager",
+-        "projectPath": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
+-        "packagesPath": "C:\\Users\\G-COMP\\.nuget\\packages\\",
+-        "outputPath": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\obj\\",
++        "projectPath": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
++        "packagesPath": "C:\\Users\\erkubanychbekov\\.nuget\\packages\\",
++        "outputPath": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\obj\\",
+         "projectStyle": "PackageReference",
++        "fallbackFolders": [
++          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
++        ],
+         "configFilePaths": [
+-          "C:\\Users\\G-COMP\\AppData\\Roaming\\NuGet\\NuGet.Config"
++          "C:\\Users\\erkubanychbekov\\AppData\\Roaming\\NuGet\\NuGet.Config",
++          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
++          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+         ],
+         "originalTargetFrameworks": [
+           "net9.0"
+         ],
+         "sources": {
++          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+           "https://api.nuget.org/v3/index.json": {}
+         },
+         "frameworks": {
+diff --git a/SibersProjectManager/obj/SibersProjectManager.csproj.nuget.g.props b/SibersProjectManager/obj/SibersProjectManager.csproj.nuget.g.props
+index 6dd602e..3e3160e 100644
+--- a/SibersProjectManager/obj/SibersProjectManager.csproj.nuget.g.props
++++ b/SibersProjectManager/obj/SibersProjectManager.csproj.nuget.g.props
+@@ -5,12 +5,13 @@
+     <RestoreTool Condition=" '$(RestoreTool)' == '' ">NuGet</RestoreTool>
+     <ProjectAssetsFile Condition=" '$(ProjectAssetsFile)' == '' ">$(MSBuildThisFileDirectory)project.assets.json</ProjectAssetsFile>
+     <NuGetPackageRoot Condition=" '$(NuGetPackageRoot)' == '' ">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
+-    <NuGetPackageFolders Condition=" '$(NuGetPackageFolders)' == '' ">C:\Users\G-COMP\.nuget\packages\</NuGetPackageFolders>
++    <NuGetPackageFolders Condition=" '$(NuGetPackageFolders)' == '' ">C:\Users\erkubanychbekov\.nuget\packages\;C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages</NuGetPackageFolders>
+     <NuGetProjectStyle Condition=" '$(NuGetProjectStyle)' == '' ">PackageReference</NuGetProjectStyle>
+     <NuGetToolVersion Condition=" '$(NuGetToolVersion)' == '' ">6.13.0</NuGetToolVersion>
+   </PropertyGroup>
+   <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+-    <SourceRoot Include="C:\Users\G-COMP\.nuget\packages\" />
++    <SourceRoot Include="C:\Users\erkubanychbekov\.nuget\packages\" />
++    <SourceRoot Include="C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages\" />
+   </ItemGroup>
+   <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+     <Import Project="$(NuGetPackageRoot)microsoft.entityframeworkcore\9.0.3\buildTransitive\net8.0\Microsoft.EntityFrameworkCore.props" Condition="Exists('$(NuGetPackageRoot)microsoft.entityframeworkcore\9.0.3\buildTransitive\net8.0\Microsoft.EntityFrameworkCore.props')" />
+diff --git a/SibersProjectManager/obj/project.assets.json b/SibersProjectManager/obj/project.assets.json
+index 22f5220..fa0abfc 100644
+--- a/SibersProjectManager/obj/project.assets.json
++++ b/SibersProjectManager/obj/project.assets.json
+@@ -1250,24 +1250,31 @@
+     ]
+   },
+   "packageFolders": {
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\": {}
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\": {},
++    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+   },
+   "project": {
+     "version": "1.0.0",
+     "restore": {
+-      "projectUniqueName": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
++      "projectUniqueName": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
+       "projectName": "SibersProjectManager",
+-      "projectPath": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
+-      "packagesPath": "C:\\Users\\G-COMP\\.nuget\\packages\\",
+-      "outputPath": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\obj\\",
++      "projectPath": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
++      "packagesPath": "C:\\Users\\erkubanychbekov\\.nuget\\packages\\",
++      "outputPath": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\obj\\",
+       "projectStyle": "PackageReference",
++      "fallbackFolders": [
++        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
++      ],
+       "configFilePaths": [
+-        "C:\\Users\\G-COMP\\AppData\\Roaming\\NuGet\\NuGet.Config"
++        "C:\\Users\\erkubanychbekov\\AppData\\Roaming\\NuGet\\NuGet.Config",
++        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
++        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+       ],
+       "originalTargetFrameworks": [
+         "net9.0"
+       ],
+       "sources": {
++        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+         "https://api.nuget.org/v3/index.json": {}
+       },
+       "frameworks": {
+diff --git a/SibersProjectManager/obj/project.nuget.cache b/SibersProjectManager/obj/project.nuget.cache
+index eb1f62d..b052844 100644
+--- a/SibersProjectManager/obj/project.nuget.cache
++++ b/SibersProjectManager/obj/project.nuget.cache
+@@ -1,36 +1,36 @@
+ {
+   "version": 2,
+-  "dgSpecHash": "VLnF49LPt5o=",
++  "dgSpecHash": "2wmvYKVDTT8=",
+   "success": true,
+-  "projectFilePath": "C:\\Users\\G-COMP\\Desktop\\source\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
++  "projectFilePath": "C:\\Users\\erkubanychbekov\\source\\repos\\dev\\SibersProjectManager\\SibersProjectManager\\SibersProjectManager.csproj",
+   "expectedPackageFiles": [
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\asp.versioning.abstractions\\8.1.0\\asp.versioning.abstractions.8.1.0.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\asp.versioning.http\\8.1.0\\asp.versioning.http.8.1.0.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\asp.versioning.mvc\\8.1.0\\asp.versioning.mvc.8.1.0.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\asp.versioning.mvc.apiexplorer\\8.1.0\\asp.versioning.mvc.apiexplorer.8.1.0.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.data.sqlite.core\\9.0.3\\microsoft.data.sqlite.core.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.3\\microsoft.entityframeworkcore.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\9.0.3\\microsoft.entityframeworkcore.abstractions.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\9.0.3\\microsoft.entityframeworkcore.analyzers.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\9.0.3\\microsoft.entityframeworkcore.relational.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.entityframeworkcore.sqlite\\9.0.3\\microsoft.entityframeworkcore.sqlite.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.entityframeworkcore.sqlite.core\\9.0.3\\microsoft.entityframeworkcore.sqlite.core.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\9.0.3\\microsoft.extensions.caching.abstractions.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.caching.memory\\9.0.3\\microsoft.extensions.caching.memory.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.3\\microsoft.extensions.configuration.abstractions.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.3\\microsoft.extensions.dependencyinjection.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.3\\microsoft.extensions.dependencyinjection.abstractions.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.dependencymodel\\9.0.3\\microsoft.extensions.dependencymodel.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.logging\\9.0.3\\microsoft.extensions.logging.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.3\\microsoft.extensions.logging.abstractions.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.options\\9.0.3\\microsoft.extensions.options.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.3\\microsoft.extensions.primitives.9.0.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.10\\sqlitepclraw.bundle_e_sqlite3.2.1.10.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\sqlitepclraw.core\\2.1.10\\sqlitepclraw.core.2.1.10.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.10\\sqlitepclraw.lib.e_sqlite3.2.1.10.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.10\\sqlitepclraw.provider.e_sqlite3.2.1.10.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512",
+-    "C:\\Users\\G-COMP\\.nuget\\packages\\system.text.json\\9.0.3\\system.text.json.9.0.3.nupkg.sha512"
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\asp.versioning.abstractions\\8.1.0\\asp.versioning.abstractions.8.1.0.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\asp.versioning.http\\8.1.0\\asp.versioning.http.8.1.0.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\asp.versioning.mvc\\8.1.0\\asp.versioning.mvc.8.1.0.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\asp.versioning.mvc.apiexplorer\\8.1.0\\asp.versioning.mvc.apiexplorer.8.1.0.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.data.sqlite.core\\9.0.3\\microsoft.data.sqlite.core.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.entityframeworkcore\\9.0.3\\microsoft.entityframeworkcore.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\9.0.3\\microsoft.entityframeworkcore.abstractions.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.entityframeworkcore.analyzers\\9.0.3\\microsoft.entityframeworkcore.analyzers.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\9.0.3\\microsoft.entityframeworkcore.relational.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.entityframeworkcore.sqlite\\9.0.3\\microsoft.entityframeworkcore.sqlite.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.entityframeworkcore.sqlite.core\\9.0.3\\microsoft.entityframeworkcore.sqlite.core.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\9.0.3\\microsoft.extensions.caching.abstractions.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.caching.memory\\9.0.3\\microsoft.extensions.caching.memory.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.3\\microsoft.extensions.configuration.abstractions.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.3\\microsoft.extensions.dependencyinjection.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.3\\microsoft.extensions.dependencyinjection.abstractions.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.dependencymodel\\9.0.3\\microsoft.extensions.dependencymodel.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.logging\\9.0.3\\microsoft.extensions.logging.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.3\\microsoft.extensions.logging.abstractions.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.options\\9.0.3\\microsoft.extensions.options.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.3\\microsoft.extensions.primitives.9.0.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.10\\sqlitepclraw.bundle_e_sqlite3.2.1.10.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\sqlitepclraw.core\\2.1.10\\sqlitepclraw.core.2.1.10.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.10\\sqlitepclraw.lib.e_sqlite3.2.1.10.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.10\\sqlitepclraw.provider.e_sqlite3.2.1.10.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512",
++    "C:\\Users\\erkubanychbekov\\.nuget\\packages\\system.text.json\\9.0.3\\system.text.json.9.0.3.nupkg.sha512"
+   ],
+   "logs": []
+ }
+\ No newline at end of file

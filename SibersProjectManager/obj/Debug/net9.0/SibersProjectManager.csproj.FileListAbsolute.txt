@@ -1,0 +1,10 @@
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.csproj.AssemblyReference.cache
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.AssemblyInfoInputs.cache
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.AssemblyInfo.cs
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.csproj.CoreCompileInputs.cache
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.RazorAssemblyInfo.cache
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.RazorAssemblyInfo.cs
+C:\Users\erkubanychbekov\source\repos\dev\SibersProjectManager\SibersProjectManager\obj\Debug\net9.0\SibersProjectManager.sourcelink.json

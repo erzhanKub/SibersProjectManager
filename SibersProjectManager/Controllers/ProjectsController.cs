@@ -24,7 +24,7 @@ namespace SibersProjectManager.Controllers
         [HttpGet]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(IReadOnlyCollection<Project>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll([FromQuery] int page = 1)
+        public async Task<IActionResult> GetAsync([FromQuery] int page = 1)
         {
             var result = await _projectService.GetAsync(page);
             if (result.IsSuccess)
@@ -48,7 +48,7 @@ namespace SibersProjectManager.Controllers
         [HttpPost("create")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
-        public async Task<ActionResult<Project>> Post(Project project)
+        public async Task<ActionResult<Project>> CreateAsync(Project project)
         {
             if (!ModelState.IsValid)
             {
@@ -63,8 +63,10 @@ namespace SibersProjectManager.Controllers
             return BadRequest(result.ErrorMessage);
         }
 
-        [HttpPost("{id}/assign-employees")]
-        public async Task<IActionResult> AssignEmployees([FromRoute] int id, IReadOnlyCollection<int> employeeIds)
+        [HttpPost("{id:int}/assign-employees")]
+        [MapToApiVersion(1)]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        public async Task<IActionResult> AssignEmployeesAsync([FromRoute] int id, IReadOnlyCollection<int> employeeIds)
         {
             if (employeeIds is null || !employeeIds.Any())
             {
@@ -82,7 +84,7 @@ namespace SibersProjectManager.Controllers
         [HttpPut("update")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Update([FromBody] Project project)
+        public async Task<IActionResult> UpdateAsync([FromBody] Project project)
         {
             if (!ModelState.IsValid)
             {
@@ -97,10 +99,10 @@ namespace SibersProjectManager.Controllers
             return BadRequest(result.ErrorMessage);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
             var result = await _projectService.DeleteAsync(id);
             if (result.IsSuccess)
@@ -112,7 +114,7 @@ namespace SibersProjectManager.Controllers
         [HttpGet("filter")]
         [MapToApiVersion(1)]
         [ProducesResponseType(typeof(IReadOnlyCollection<Project>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetFiltered(
+        public async Task<IActionResult> GetFilteredAsync(
             [FromQuery] int page = 1,
             [FromQuery] DateTime? startFrom = null,
             [FromQuery] DateTime? startTo = null,
