@@ -8,10 +8,12 @@ namespace SibersProjectManager.Services
 {
     internal sealed class TaskService(
         AppDbContext appDbContext,
-        ILogger<TaskService> logger) : ITaskService
+        ILogger<TaskService> logger,
+        IUserContextService userContextService) : ITaskService
     {
         private readonly AppDbContext _context = appDbContext;
         private readonly ILogger<TaskService> _logger = logger;
+        private readonly IUserContextService _userContextService = userContextService;
         private const int _pageSize = 10;
 
         public async Task<Result<IReadOnlyCollection<ProjectTask>>> GetAsync(
@@ -20,17 +22,47 @@ namespace SibersProjectManager.Services
             if (page < 1)
                 page = 1;
 
+            var userId = _userContextService.GetCurrentUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt");
+                return Result<IReadOnlyCollection<ProjectTask>>.Failure("User is not authorized");
+            }
+
             var query = _context.ProjectTasks
                 .Include(t => t.Author)
                 .Include(t => t.Assignee)
                 .Include(t => t.Project)
                 .AsQueryable();
 
+            query = query.Where(t => t.ProjectId == projectId);
+
             if (status.HasValue)
                 query = query.Where(t => t.Status == status);
 
+            if (await _userContextService.IsInRoleAsync("Employee"))
+            {
+                if (int.TryParse(userId, out var userIdAsInt))
+                {
+                    query = query.Where(t => t.AssigneeId == userIdAsInt);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to parse userId [{UserId}] to int", userId);
+                    return Result<IReadOnlyCollection<ProjectTask>>.Failure("Invalid user ID");
+                }
+            }
+            else if (await _userContextService.IsInRoleAsync("ProjectManager"))
+            {
+                var projects = await _context.Projects
+                    .Where(p => p.ProjectManager.ApplicationUserId == userId)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+                query = query.Where(t => projects.Contains(t.ProjectId));
+            }
+
             var tasks = await query
-                .Where(t => t.ProjectId == projectId)
                 .Skip((page - 1) * _pageSize)
                 .Take(_pageSize)
                 .AsNoTracking()
@@ -39,7 +71,7 @@ namespace SibersProjectManager.Services
             if (!tasks.Any())
             {
                 _logger.LogWarning("No tasks found for project [{ProjectId}] on page [{Page}]", projectId, page);
-                return Result<IReadOnlyCollection<ProjectTask>>.Failure($"No tasks found for project [{projectId}] on page [{page}]");
+                return Result<IReadOnlyCollection<ProjectTask>>.Success([]);
             }
 
             return Result<IReadOnlyCollection<ProjectTask>>.Success(tasks.AsReadOnly());

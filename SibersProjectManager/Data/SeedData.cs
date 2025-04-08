@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using SibersProjectManager.Models;
 using SibersProjectManager.Models.Enums;
 
@@ -6,18 +6,67 @@ namespace SibersProjectManager.Data
 {
     internal static class SeedData
     {
-        public static void Initialize(IServiceProvider serviceProvider)
+        public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
-            using var context = new AppDbContext(serviceProvider.GetRequiredService<DbContextOptions<AppDbContext>>());
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            var roles = new[] { "Administrator", "ProjectManager", "Employee" };
+            foreach (var role in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(role))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(role));
+                }
+            }
 
             if (context.Employees.Any())
                 return;
 
+            var adminUser = new ApplicationUser
+            {
+                UserName = "admin@gmail.com",
+                Email = "admin@gmail.com",
+                EmailConfirmed = true
+            };
+            var managerUser = new ApplicationUser
+            {
+                UserName = "manager@gmail.com",
+                Email = "manager@gmail.com",
+                EmailConfirmed = true
+            };
+            var employeeUser = new ApplicationUser
+            {
+                UserName = "employee@gmail.com",
+                Email = "employee@gmail.com",
+                EmailConfirmed = true
+            };
+
+            if (await userManager.FindByEmailAsync(adminUser.Email) == null)
+            {
+                await userManager.CreateAsync(adminUser, "Admin@123");
+                await userManager.AddToRoleAsync(adminUser, "Administrator");
+            }
+
+            if (await userManager.FindByEmailAsync(managerUser.Email) == null)
+            {
+                await userManager.CreateAsync(managerUser, "Manager@123");
+                await userManager.AddToRoleAsync(managerUser, "ProjectManager");
+            }
+
+            if (await userManager.FindByEmailAsync(employeeUser.Email) == null)
+            {
+                await userManager.CreateAsync(employeeUser, "Employee@123");
+                await userManager.AddToRoleAsync(employeeUser, "Employee");
+            }
+
             var employees = new List<Employee>
             {
-                new() { FirstName = "Ryan", LastName = "Thomas", Patronymic = "Gosling", Email = "Ryan@gmail.com" },
-                new() { FirstName = "Pedro", LastName = "Pascal", Patronymic = "Balmaceda", Email = "Pedro@gmail.com" },
-                new() { FirstName = "Harry", LastName = "Potter", Patronymic = "Wizard", Email = "Harry@gmail.com" }
+                new() { FirstName = "Ryan", LastName = "Thomas", Patronymic = "Gosling", Email = "admin@gmail.com", ApplicationUserId = adminUser.Id },
+                new() { FirstName = "Pedro", LastName = "Pascal", Patronymic = "Balmaceda", Email = "manager@gmail.com", ApplicationUserId = managerUser.Id },
+                new() { FirstName = "Harry", LastName = "Potter", Patronymic = "Wizard", Email = "employee@gmail.com", ApplicationUserId = employeeUser.Id }
             };
 
             context.Employees.AddRange(employees);
@@ -26,7 +75,7 @@ namespace SibersProjectManager.Data
             var project = new Project
             {
                 Name = "Sibers Project Manager",
-                CustomerCompany = "Sibers",
+                CustomerCompany = "gmail",
                 ContractorCompany = "Blue Sky",
                 StartDate = DateTime.Now,
                 EndDate = DateTime.Now.AddDays(7),

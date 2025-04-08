@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SibersProjectManager.Interfaces;
 using SibersProjectManager.Models;
@@ -9,6 +10,7 @@ namespace SibersProjectManager.Controllers
     [ApiController]
     [ApiVersion(1)]
     [Route("api/v{version:apiVersion}/projects")]
+    [Authorize(Roles = "Administrator,ProjectManager")]
     [Produces("application/json")]
     [Consumes("application/json")]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]

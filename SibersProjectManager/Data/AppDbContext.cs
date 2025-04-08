@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SibersProjectManager.Models;
 using SibersProjectManager.Models.Enums;
 
 namespace SibersProjectManager.Data
 {
-    internal sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+    internal sealed class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext(options)
     {
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Project> Projects { get; set; }
@@ -110,10 +111,20 @@ namespace SibersProjectManager.Data
             modelBuilder.Entity<Employee>()
                 .Property(e => e.LeadingProjects)
                 .HasColumnName("leading_projects");
-            
+
             modelBuilder.Entity<Employee>()
                 .Property(e => e.ProjectEmployees)
                 .HasColumnName("project_employees");
+
+            modelBuilder.Entity<Employee>()
+                .Property(e => e.ApplicationUserId)
+                .HasColumnName("application_user_id");
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.ApplicationUser)
+                .WithOne()
+                .HasForeignKey<Employee>(e => e.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         private void OnProjectEmployeeCreating(ModelBuilder modelBuilder)
@@ -218,7 +229,7 @@ namespace SibersProjectManager.Data
                 .HasOne(t => t.Assignee)
                 .WithMany(e => e.AssignedTasks)
                 .HasForeignKey(t => t.AssigneeId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

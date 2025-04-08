@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SibersProjectManager.Models
 {
@@ -17,6 +18,11 @@ namespace SibersProjectManager.Models
 
         [Required, EmailAddress]
         public string Email { get; init; } = string.Empty;
+
+        public string ApplicationUserId { get; set; } = string.Empty;
+
+        [ForeignKey(nameof(ApplicationUserId))]
+        public ApplicationUser ApplicationUser {get; set;} = new();
 
         public ICollection<Project> LeadingProjects { get; init; } = [];
         public ICollection<ProjectEmployee> ProjectEmployees { get; init; } = [];

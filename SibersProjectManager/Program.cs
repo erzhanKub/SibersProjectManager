@@ -1,8 +1,11 @@
+using System.Threading.Tasks;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SibersProjectManager.Data;
 using SibersProjectManager.Interfaces;
+using SibersProjectManager.Models;
 using SibersProjectManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 LoggerConfiguration();
 ApiVersioningSetup(builder.Services);
 ServiceRegistration(builder.Services);
-
-builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
@@ -24,6 +25,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -35,13 +37,13 @@ app.MapControllerRoute(
 
 
 app.Run();
-SetSeedData(app);
+await SetSeedData(app);
 
-void SetSeedData(WebApplication app)
+async Task SetSeedData(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    SeedData.Initialize(services);
+    await SeedData.InitializeAsync(services);
 }
 
 void ApiVersioningSetup(IServiceCollection services)
@@ -68,9 +70,18 @@ void ServiceRegistration(IServiceCollection services)
     services.AddDbContext<AppDbContext>(options =>
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+    services.AddHttpContextAccessor();
+
+    services.AddControllersWithViews();
+
+    services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddEntityFrameworkStores<AppDbContext>()
+        .AddDefaultTokenProviders();
+
     services.AddScoped<IEmployeeService, EmployeeService>();
     services.AddScoped<IProjectService, ProjectService>();
     services.AddScoped<ITaskService, TaskService>();
+    services.AddScoped<IUserContextService, UserContextService>();
 }
 
 void LoggerConfiguration()

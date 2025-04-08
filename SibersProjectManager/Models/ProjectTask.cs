@@ -19,7 +19,7 @@ namespace SibersProjectManager.Models
         public Employee Author { get; init; } = new();
 
         public int? AssigneeId { get; set; }
-        public Employee Assignee { get; init; } = new();
+        public Employee? Assignee { get; init; }
 
         public int ProjectId { get; init; }
         public Project Project { get; init; } = new();
