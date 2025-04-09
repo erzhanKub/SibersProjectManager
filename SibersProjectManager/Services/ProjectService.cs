@@ -2,15 +2,18 @@ using Microsoft.EntityFrameworkCore;
 using SibersProjectManager.Data;
 using SibersProjectManager.Interfaces;
 using SibersProjectManager.Models;
+using SibersProjectManager.Models.Constants;
 using SibersProjectManager.Models.Enums;
 
 namespace SibersProjectManager.Services
 {
     internal sealed class ProjectService(
         AppDbContext appDbContext,
+        IUserContextService userContextService,
         ILogger<ProjectService> logger) : IProjectService
     {
         private readonly AppDbContext _context = appDbContext;
+        private readonly IUserContextService _userContextService = userContextService;
         private readonly ILogger<ProjectService> _logger = logger;
         private const int _pageSize = 10;
 
@@ -19,9 +22,28 @@ namespace SibersProjectManager.Services
             if (page < 1)
                 page = 1;
 
-            var projects = await _context.Projects
+            var userId = _userContextService.GetCurrentUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt");
+                return Result<IReadOnlyCollection<Project>>.Failure("User is not authorized");
+            }
+
+            var query = _context.Projects
                 .Include(p => p.ProjectEmployees)
                 .Include(p => p.ProjectManager)
+                .AsQueryable();
+
+            if (await _userContextService.IsInRoleAsync(Roles.Employee))
+            {
+                query = query.Where(p => p.ProjectEmployees.Any(pe => pe.Employee.ApplicationUserId == userId));
+            }
+            else if (await _userContextService.IsInRoleAsync(Roles.ProjectManager))
+            {
+                query = query.Where(p => p.ProjectManager.ApplicationUserId == userId);
+            }
+
+            var projects = await query
                 .Skip((page - 1) * _pageSize)
                 .Take(_pageSize)
                 .AsNoTracking()
@@ -44,6 +66,13 @@ namespace SibersProjectManager.Services
                 return Result<Project>.Failure($"Invalid project ID [{id}]");
             }
 
+            var userId = _userContextService.GetCurrentUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt");
+                return Result<Project>.Failure("User is not authorized");
+            }
+
             var project = await _context.Projects
                 .Include(p => p.ProjectEmployees)
                 .Include(p => p.ProjectManager)
@@ -53,6 +82,23 @@ namespace SibersProjectManager.Services
             {
                 _logger.LogWarning("Project with ID [{Id}] not found", id);
                 return Result<Project>.Failure($"Project with ID [{id}] not found");
+            }
+
+            if (await _userContextService.IsInRoleAsync(Roles.Employee))
+            {
+                if (!project.ProjectEmployees.Any(pe => pe.Employee.ApplicationUserId == userId))
+                {
+                    _logger.LogWarning("Access denied for user [{UserId}] to project [{ProjectId}]", userId, id);
+                    return Result<Project>.Failure("Access denied");
+                }
+            }
+            else if (await _userContextService.IsInRoleAsync(Roles.ProjectManager))
+            {
+                if (project.ProjectManager.ApplicationUserId != userId)
+                {
+                    _logger.LogWarning("Access denied for user [{UserId}] to project [{ProjectId}]", userId, id);
+                    return Result<Project>.Failure("Access denied");
+                }
             }
 
             return Result<Project>.Success(project);
@@ -119,6 +165,13 @@ namespace SibersProjectManager.Services
 
         public async Task<Result<bool>> AssignEmployeesAsync(int projectId, IReadOnlyCollection<int> employeeIds)
         {
+            var userId = _userContextService.GetCurrentUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt");
+                return Result<bool>.Failure("User is not authorized");
+            }
+
             var project = await _context.Projects
                 .Include(p => p.ProjectEmployees)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
@@ -127,6 +180,20 @@ namespace SibersProjectManager.Services
             {
                 _logger.LogWarning("Project with ID [{Id}] not found", projectId);
                 return Result<bool>.Failure($"Project with ID [{projectId}] not found");
+            }
+
+            if (await _userContextService.IsInRoleAsync(Roles.ProjectManager))
+            {
+                if (project.ProjectManager.ApplicationUserId != userId)
+                {
+                    _logger.LogWarning("Access denied for user [{UserId}] to assign employees to project [{ProjectId}]", userId, projectId);
+                    return Result<bool>.Failure("Access denied");
+                }
+            }
+            else if (!await _userContextService.IsInRoleAsync(Roles.Administrator))
+            {
+                _logger.LogWarning("Access denied for user [{UserId}] to assign employees to project [{ProjectId}]", userId, projectId);
+                return Result<bool>.Failure("Access denied");
             }
 
             project.ProjectEmployees.Clear();

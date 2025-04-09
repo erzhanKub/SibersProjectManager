@@ -10,7 +10,7 @@ namespace SibersProjectManager.Controllers
     [ApiController]
     [ApiVersion(1)]
     [Route("api/v{version:apiVersion}/projects")]
-    [Authorize(Roles = "Administrator,ProjectManager")]
+    [Authorize]
     [Produces("application/json")]
     [Consumes("application/json")]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
@@ -49,6 +49,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpPost("create")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager")]
         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
         public async Task<ActionResult<Project>> CreateAsync(Project project)
         {
@@ -67,6 +68,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpPost("{id:int}/assign-employees")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public async Task<IActionResult> AssignEmployeesAsync([FromRoute] int id, IReadOnlyCollection<int> employeeIds)
         {
@@ -85,6 +87,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpPut("update")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateAsync([FromBody] Project project)
         {
@@ -103,6 +106,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpDelete("{id:int}")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
@@ -115,6 +119,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpGet("filter")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager,Employee")]
         [ProducesResponseType(typeof(IReadOnlyCollection<Project>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetFilteredAsync(
             [FromQuery] int page = 1,

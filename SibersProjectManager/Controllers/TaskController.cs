@@ -52,6 +52,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpPost("create")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager")]
         [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateAsync([FromBody] ProjectTask task)
         {
@@ -70,6 +71,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpPut("update")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateAsync([FromBody] ProjectTask task)
         {
@@ -88,6 +90,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpDelete("{id:int}")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager")]
         [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteAsync([FromRoute] int id)
         {
@@ -100,6 +103,7 @@ namespace SibersProjectManager.Controllers
 
         [HttpPost("{id:int}/assign-executor")]
         [MapToApiVersion(1)]
+        [Authorize(Roles = "Administrator,ProjectManager")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public async Task<IActionResult> AssignExecutorAsync([FromRoute] int id, [FromQuery] int executorId)
         {

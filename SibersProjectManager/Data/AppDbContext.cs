@@ -101,22 +101,6 @@ namespace SibersProjectManager.Data
                 .IsUnique();
 
             modelBuilder.Entity<Employee>()
-                .Property(e => e.AssignedTasks)
-                .HasColumnName("assigned_tasks");
-
-            modelBuilder.Entity<Employee>()
-                .Property(e => e.AuthoredTasks)
-                .HasColumnName("authored_tasks");
-
-            modelBuilder.Entity<Employee>()
-                .Property(e => e.LeadingProjects)
-                .HasColumnName("leading_projects");
-
-            modelBuilder.Entity<Employee>()
-                .Property(e => e.ProjectEmployees)
-                .HasColumnName("project_employees");
-
-            modelBuilder.Entity<Employee>()
                 .Property(e => e.ApplicationUserId)
                 .HasColumnName("application_user_id");
 
@@ -133,16 +117,8 @@ namespace SibersProjectManager.Data
                 .ToTable("project_employee");
 
             modelBuilder.Entity<ProjectEmployee>()
-                .Property(pe => pe.Project)
-                .HasColumnName("project");
-
-            modelBuilder.Entity<ProjectEmployee>()
                 .Property(pe => pe.ProjectId)
                 .HasColumnName("project_id");
-
-            modelBuilder.Entity<ProjectEmployee>()
-                .Property(pe => pe.Employee)
-                .HasColumnName("employee");
 
             modelBuilder.Entity<ProjectEmployee>()
                 .Property(pe => pe.EmployeeId)
@@ -165,71 +141,49 @@ namespace SibersProjectManager.Data
         private void OnProjectTaskCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ProjectTask>()
-                .ToTable("tasks")
-                .HasKey(t => t.Id);
+                .ToTable("project_tasks");
 
             modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Id)
+                .Property(pt => pt.Id)
                 .HasColumnName("id");
 
             modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Comment)
+                .Property(pt => pt.Title)
+                .IsRequired()
+                .HasMaxLength(200)
+                .HasColumnName("title");
+
+            modelBuilder.Entity<ProjectTask>()
+                .Property(pt => pt.Comment)
                 .HasMaxLength(500)
-                .HasColumnName("comment")
-                .HasDefaultValue(string.Empty);
+                .HasColumnName("comment");
 
             modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Status)
-                .HasColumnName("status")
-                .HasDefaultValue(TaskStatus.ToDo);
+                .Property(pt => pt.Status)
+                .HasColumnName("status");
 
             modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Priority)
+                .Property(pt => pt.Priority)
                 .HasColumnName("priority")
                 .HasDefaultValue(Priority.Low);
 
             modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.AuthorId)
-                .HasColumnName("author_id");
-
-            modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Author)
-                .HasColumnName("author");
-
-            modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.AssigneeId)
-                .HasColumnName("assignee_id");
-
-            modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Assignee)
-                .HasColumnName("assignee");
-
-            modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Project)
-                .HasColumnName("project");
-
-            modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.ProjectId)
-                .HasColumnName("project_id");
-
-            modelBuilder.Entity<ProjectTask>()
-                .Property(t => t.Title)
-                .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("title")
-                .HasDefaultValue(string.Empty);
-
-            modelBuilder.Entity<ProjectTask>()
-                .HasOne(t => t.Author)
+                .HasOne(pt => pt.Author)
                 .WithMany(e => e.AuthoredTasks)
-                .HasForeignKey(t => t.AuthorId)
+                .HasForeignKey(pt => pt.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<ProjectTask>()
-                .HasOne(t => t.Assignee)
+                .HasOne(pt => pt.Assignee)
                 .WithMany(e => e.AssignedTasks)
-                .HasForeignKey(t => t.AssigneeId)
+                .HasForeignKey(pt => pt.AssigneeId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ProjectTask>()
+                .HasOne(pt => pt.Project)
+                .WithMany(p => p.ProjectTasks)
+                .HasForeignKey(pt => pt.ProjectId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SibersProjectManager.Data;
 using SibersProjectManager.Interfaces;
 using SibersProjectManager.Models;
+using SibersProjectManager.Models.Constants;
 using SibersProjectManager.Models.Enums;
 
 namespace SibersProjectManager.Services
@@ -40,7 +41,7 @@ namespace SibersProjectManager.Services
             if (status.HasValue)
                 query = query.Where(t => t.Status == status);
 
-            if (await _userContextService.IsInRoleAsync("Employee"))
+            if (await _userContextService.IsInRoleAsync(Roles.Employee))
             {
                 if (int.TryParse(userId, out var userIdAsInt))
                 {
@@ -52,7 +53,7 @@ namespace SibersProjectManager.Services
                     return Result<IReadOnlyCollection<ProjectTask>>.Failure("Invalid user ID");
                 }
             }
-            else if (await _userContextService.IsInRoleAsync("ProjectManager"))
+            else if (await _userContextService.IsInRoleAsync(Roles.ProjectManager))
             {
                 var projects = await _context.Projects
                     .Where(p => p.ProjectManager.ApplicationUserId == userId)
@@ -84,6 +85,14 @@ namespace SibersProjectManager.Services
                 _logger.LogWarning("Invalid task ID [{Id}]", id);
                 return Result<ProjectTask>.Failure($"Invalid task ID [{id}]");
             }
+
+            var userId = _userContextService.GetCurrentUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt");
+                return Result<ProjectTask>.Failure("User is not authorized");
+            }
+
             var task = await _context.ProjectTasks
                 .Include(t => t.Author)
                 .Include(t => t.Assignee)
@@ -94,6 +103,28 @@ namespace SibersProjectManager.Services
             {
                 _logger.LogWarning("Task with ID [{Id}] not found", id);
                 return Result<ProjectTask>.Failure($"Task with ID [{id}] not found");
+            }
+
+            if (await _userContextService.IsInRoleAsync(Roles.Employee))
+            {
+                if (task.AssigneeId != int.Parse(userId))
+                {
+                    _logger.LogWarning("Access denied for user [{UserId}] to task [{TaskId}]", userId, id);
+                    return Result<ProjectTask>.Failure("Access denied");
+                }
+            }
+            else if (await _userContextService.IsInRoleAsync(Roles.ProjectManager))
+            {
+                var managerProjects = await _context.Projects
+                    .Where(p => p.ProjectManager.ApplicationUserId == userId)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+                if (!managerProjects.Contains(task.ProjectId))
+                {
+                    _logger.LogWarning("Access denied for user [{UserId}] to task [{TaskId}]", userId, id);
+                    return Result<ProjectTask>.Failure("Access denied");
+                }
             }
 
             return Result<ProjectTask>.Success(task);
@@ -160,11 +191,32 @@ namespace SibersProjectManager.Services
 
         public async Task<Result<bool>> AssignExecutorAsync(int taskId, int executorId)
         {
+            var userId = _userContextService.GetCurrentUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt");
+                return Result<bool>.Failure("User is not authorized");
+            }
+
             var task = await _context.ProjectTasks.FindAsync(taskId);
             if (task is null)
             {
                 _logger.LogWarning("Task with ID [{TaskId}] not found", taskId);
                 return Result<bool>.Failure($"Task with ID [{taskId}] not found");
+            }
+
+            if (await _userContextService.IsInRoleAsync(Roles.ProjectManager))
+            {
+                var managerProjects = await _context.Projects
+                    .Where(p => p.ProjectManager.ApplicationUserId == userId)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+
+                if (!managerProjects.Contains(task.ProjectId))
+                {
+                    _logger.LogWarning("Access denied for user [{UserId}] to assign executor for task [{TaskId}]", userId, taskId);
+                    return Result<bool>.Failure("You can only assign executors for tasks in your projects");
+                }
             }
 
             var employee = await _context.Employees.FindAsync(executorId);
@@ -189,11 +241,27 @@ namespace SibersProjectManager.Services
 
         public async Task<Result<bool>> ChangeStatusAsync(int taskId, TaskStatus newStatus)
         {
+            var userId = _userContextService.GetCurrentUserId();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _logger.LogWarning("Unauthorized access attempt");
+                return Result<bool>.Failure("User is not authorized");
+            }
+
             var task = await _context.ProjectTasks.FindAsync(taskId);
             if (task is null)
             {
                 _logger.LogWarning("Task with ID [{TaskId}] not found", taskId);
                 return Result<bool>.Failure($"Task with ID [{taskId}] not found");
+            }
+
+            if (await _userContextService.IsInRoleAsync(Roles.Employee))
+            {
+                if (task.AssigneeId != int.Parse(userId))
+                {
+                    _logger.LogWarning("Access denied for user [{UserId}] to change task [{TaskId}] status", userId, taskId);
+                    return Result<bool>.Failure("You can only change the status of your own tasks");
+                }
             }
 
             task.Status = newStatus;

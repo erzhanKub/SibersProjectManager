@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

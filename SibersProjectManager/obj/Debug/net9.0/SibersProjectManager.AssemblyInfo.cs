@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SibersProjectManager")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e54cfa3e45df9250d14949b064b6e046658c12b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+baf8d60171ef7c6321920dfabf39e9605f8dad7f")]
 [assembly: System.Reflection.AssemblyProductAttribute("SibersProjectManager")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SibersProjectManager")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
