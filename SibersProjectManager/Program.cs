@@ -1,7 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
 using SibersProjectManager.Data;
 using SibersProjectManager.Interfaces;
 using SibersProjectManager.Models;
@@ -9,7 +8,6 @@ using SibersProjectManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-LoggerConfiguration();
 ApiVersioningSetup(builder.Services);
 ServiceRegistration(builder.Services);
 
@@ -33,7 +31,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();
 await SetSeedData(app);
@@ -81,14 +78,4 @@ void ServiceRegistration(IServiceCollection services)
     services.AddScoped<IProjectService, ProjectService>();
     services.AddScoped<ITaskService, TaskService>();
     services.AddScoped<IUserContextService, UserContextService>();
-}
-
-void LoggerConfiguration()
-{
-    Log.Logger = new LoggerConfiguration()
-        .ReadFrom.Configuration(new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .Build())
-        .Enrich.FromLogContext()
-        .CreateLogger();
 }
